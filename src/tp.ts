@@ -1262,14 +1262,11 @@ export class TpClient {
       throw new Error(`Unsupported time-record report ID ${reportId}. This tool currently supports report ID 59 (Enosis Time Records).`)
     }
 
-    const endExclusive = new Date(`${endDate}T00:00:00Z`)
-    endExclusive.setUTCDate(endExclusive.getUTCDate() + 1)
-
     const where = [
-      `User.Id eq ${userId}`,
-      `Date ge '${startDate}'`,
-      `Date lt '${endExclusive.toISOString().slice(0, 10)}'`,
-    ].join(" and ")
+      `(User.Id eq ${userId})`,
+      `(Date gte '${startDate}')`,
+      `(Date lte '${endDate}')`,
+    ].join("and")
 
     return this.getAllOrNull<T>({
       pathParam: ["Times"],
