@@ -1,6 +1,6 @@
 ---
 name: nwn-dev-kpi
-description: Apply NWN development KPI rules when estimating user stories, calculating sprint productivity or defect density, or interpreting those metrics. Use for Targetprocess time reports for a user and date range, story point estimation, and sprint KPI questions.
+description: Apply NWN development KPI rules when estimating user stories, calculating sprint productivity or defect density, or interpreting those metrics. Use for story point estimation and sprint KPI questions.
 ---
 
 # NWN Development KPI Rules
@@ -12,10 +12,45 @@ Use these rules when asked to estimate a development story or calculate or inter
 When a user asks for a Targetprocess time report for a person and date range, retrieve the source data before summarizing it:
 
 1. Resolve the person's Targetprocess user ID from `get_users` (or use `get_user_by_id` when the user gives an email).
-2. Call `get_time_records` with the requested `userId` and inclusive `startDate` and `endDate` in `YYYY-MM-DD` format.
+2. Call `get_time_records` (or `get_enosis_time_records` when the server exposes it, with `reportId` defaulting to `59`; do not silently substitute another report ID) with the requested `userId` and inclusive `startDate` and `endDate` in `YYYY-MM-DD` format. Output is large and is saved to a temp file; parse it with a script (JSON array) rather than reading it. Hours are the trailing `/ <n>h` in each record `Name`; the day is `DayPeriod.PlannedStartDate` (`/Date(ms)/`); the ticket ID is the first 6-digit number in `Description` (strip HTML).
 3. Summarize returned time records for the requested user and dates. Preserve the distinction between reported time and accepted delivery.
 
 Time records provide reported work/time data; they do not by themselves establish completed story points, productive team days, bugs reported, or a team's sprint boundaries. For productivity or defect-density calculations, obtain the missing inputs from the user or an appropriate source and apply the formulas below. Never treat logged hours as completed story points.
+
+### Default team and report scope
+
+Unless the user names different people, a KPI or time report covers the whole team: Targetprocess user IDs **142, 539, 400, and 399**. Call the time-report tool once per user ID for the requested date range, report each person separately, then report team totals. Team size is **4** for the Productive Team Days formula. Still ask for or state assumptions for PTO, holidays, blocked days, and other commitment (infer PTO only from evidence such as days with no logged time).
+
+### Always derive story points from the estimation rules
+
+Targetprocess does not return story points. Whenever a report, productivity, or defect-density request needs completed story points and the user has not supplied them, do not stop to ask. Calculate them:
+
+1. Group the time records by ticket ID and sum the hours per ticket. These hours are the evidence for the Development effort score, using the effort anchors below.
+2. Read the ticket's title and acceptance criteria (for example with `get_user_story_content`) and the time-record descriptions to score Complexity, Independence risk, and Predictability risk with the anchors below. Use the AI-assisted weighting unless the user says no AI was used.
+3. Apply the weighted formula and Fibonacci mapping in "Story estimation" to each ticket. Show a per-ticket table with the four scores, weighted score, and points.
+4. Sum the points of accepted tickets as Completed Story Points, then compute productivity and defect density.
+5. State the assumptions used. Say that the points are calculated estimates, not values recorded in the Dev-KPIs (NWN) tab. Flag bug-fix tickets, because the sheet may not give them points, and show the total both with and without them.
+6. Values the user or the sheet has already recorded take precedence over calculated ones. If the bug count is unavailable, report defect density as undefined rather than as 0. If the user states the bug count (for example "consider bugs as 0"), use it: defect density is then 0 when completed points are above zero.
+
+### Team days from logged hours
+
+When asked for team days from total hours: days = total logged hours ÷ 8, per developer and for the team. Cross-check with the Productive Team Days formula by inferring PTO from working days with no logged time (for example 4 × 10 − 3 PTO = 37). State that PTO is inferred and that no holidays, blocked days, or other commitment were assumed.
+
+### Default scoring heuristics (when ticket content is not individually reviewed)
+
+Use these and state them as assumptions; open a ticket's content (`get_user_story_content`) only when a heuristic looks wrong. Always use AI-assisted weights unless told otherwise.
+
+- Effort score from the ticket's hours in the period: ≤4h=1, ≤8h=2, ≤16h=3, ≤32h=4, else 5. Note that hours from outside the period are missing.
+- Template table-refactor stories (SQL OneTimeUpdates script + backend + Angular): Complexity 2 if ≤4h else 3; Independence 1 (2 if the time entries mention merge conflicts, being unable to publish, or another blocker); Predictability 3 (database script).
+- Audit-only stories: Complexity 2, Predictability 2.
+- Bug-fix tickets (description starts with Bug/BUG, or the ID is not found as a user story by `get_user_story_content`, or the text says fix/root cause): Complexity 3 (4 if >12h), Independence 1, Predictability 2 (3 if it includes a database change).
+- Exclude non-deliverable work from points and list its hours separately: feature planning/estimation (feature IDs) and branch rebase/merge chores.
+- Use unrounded weighted values with band edges at 1.5, 2.2, 2.9, 3.6, 4.3 (for example 1.5 → 1 point, 2.35 → 3 points).
+- Treat tickets with logged time as accepted unless states are checked, and say the points are therefore an upper bound.
+
+### Per-developer output
+
+When asked per developer, report a table with: hours, productive days, story tickets, story points, bug-fix tickets, bug-fix points, points per day (stories only and stories plus bug fixes), and defect density, followed by a team total row. Also list each developer's bug-fix ticket IDs and excluded planning/chore hours. Reconcile ticket counts and points so per-developer rows sum to team totals.
 
 ### Aligning with the “Dev-KPIs (NWN)” tab
 
@@ -27,9 +62,9 @@ When preparing or explaining a row in that tab, preserve its reporting fields an
 - Dev effort, Complexity, Independence risk, and Predictability Risk scores, with their displayed weights (50%, 20%, 15%, and 15%).
 - Story point, Weighted Story Point, and Bug Reported as separate fields.
 
-Treat blank dimension or bug cells as unavailable, not as zero. Do not infer complexity, independence, predictability, weighted points, or bug counts from hours alone. The tab may contain recorded half-point story values; preserve them as recorded and do not force them into the Fibonacci mapping in the estimation rules above. If calculating a weighted value, first establish the score inputs and which weighting formula applies; do not replace a value already recorded in the sheet without being asked.
+Treat blank dimension or bug cells as unavailable, not as zero. Do not infer complexity, independence, predictability, or bug counts from hours alone; hours only support the Development effort score, and the other dimensions come from the ticket content as described above. The tab may contain recorded half-point story values; preserve them as recorded and do not force them into the Fibonacci mapping in the estimation rules below. If calculating a weighted value, first establish the score inputs and which weighting formula applies; do not replace a value already recorded in the sheet without being asked.
 
-The time-report tool reads Targetprocess `Times` and returns the time entry ID, spent hours, date, description, user, assignable, and custom fields. It does not currently provide the tabular report's portfolio epic or public-holiday columns; do not infer these fields or silently exclude records as holidays. Use the returned assignable and custom fields to identify work. Do not assume every record contains a ticket ID or can be assigned to a spreadsheet row; flag records whose ticket/story mapping is missing or ambiguous. Sum hours by ticket only when the returned data provides a reliable ticket identifier and effort field.
+The time-report tool returns time records with description, user, day period, portfolio epic, and custom fields. Use those returned fields to identify and summarize work. Do not assume every record contains a ticket ID or can be assigned to a spreadsheet row; flag records whose ticket/story mapping is missing or ambiguous. Sum hours by ticket only when the returned data provides a reliable ticket identifier and effort field.
 
 ## Story estimation
 
@@ -138,4 +173,4 @@ Report the result in bugs per story point. Lower is better; interpret it as a tr
 
 ## Response format
 
-For a time report, identify the person, date range, returned time totals, and any data limitations. For an estimate, show the four dimension scores with short evidence, whether the AI-assisted or non-AI weighting was used, the weighted calculation, and the resulting Fibonacci points. For sprint metrics, show the supplied inputs, formula, result, and unit. Keep uncertainty visible and do not fabricate missing inputs.
+For an estimate, show the four dimension scores with short evidence, whether the AI-assisted or non-AI weighting was used, the weighted calculation, and the resulting Fibonacci points. For sprint metrics, show the supplied inputs, formula, result, and unit. Keep uncertainty visible and do not fabricate missing inputs.
