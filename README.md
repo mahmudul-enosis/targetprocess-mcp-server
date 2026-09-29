@@ -150,6 +150,32 @@ Time Tracking
 - `get_my_time_logs` — Get recent time log entries submitted by the current user (optional take)
 - `get_enosis_time_records` — Get Enosis Time Records for a Targetprocess user and inclusive date range (reportId, userId, startDate, endDate; reportId defaults to 59 and currently supports 59 only)
 
+### `get_enosis_time_records`
+
+Reads the Enosis Time Records tabular report data for one Targetprocess user over an inclusive date range. It returns the time record description, connected user, day period, portfolio epic, and custom fields. Public holiday records are excluded to match report 59.
+
+Parameters:
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `reportId` | number | No | Tabular report ID. Defaults to `59`; currently only report 59 (Enosis Time Records) is supported. |
+| `userId` | number | Yes | Targetprocess user ID. |
+| `startDate` | string | Yes | Inclusive start date in `YYYY-MM-DD` format. |
+| `endDate` | string | Yes | Inclusive end date in `YYYY-MM-DD` format. |
+
+Example:
+
+```json
+{
+  "reportId": 59,
+  "userId": 539,
+  "startDate": "2026-09-14",
+  "endDate": "2026-09-25"
+}
+```
+
+The handler retrieves all matching pages. It returns a validation message when the date format is invalid, the start date is after the end date, or the report ID is not supported.
+
 Assignments
 - `assign_role` — Assign a user to a role (e.g. Business Analyst, Developer, QA Engineer) on a TP card (cardId, userId, roleId)
 - `assign_role_to_feature` — Assign a user to a role on all user stories in a feature in one call (featureId, userId, roleId)
