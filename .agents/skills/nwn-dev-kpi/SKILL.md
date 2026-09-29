@@ -12,7 +12,7 @@ Use these rules when asked to estimate a development story or calculate or inter
 When a user asks for a Targetprocess time report for a person and date range, retrieve the source data before summarizing it:
 
 1. Resolve the person's Targetprocess user ID from `get_users` (or use `get_user_by_id` when the user gives an email).
-2. Call `get_enosis_time_records` with the requested `userId`, inclusive `startDate` and `endDate` in `YYYY-MM-DD` format, and the requested `reportId`. The report ID defaults to `59`; this server currently supports only report `59` (Enosis Time Records). Do not silently substitute another report ID.
+2. Call `get_time_records` with the requested `userId` and inclusive `startDate` and `endDate` in `YYYY-MM-DD` format.
 3. Summarize returned time records for the requested user and dates. Preserve the distinction between reported time and accepted delivery.
 
 Time records provide reported work/time data; they do not by themselves establish completed story points, productive team days, bugs reported, or a team's sprint boundaries. For productivity or defect-density calculations, obtain the missing inputs from the user or an appropriate source and apply the formulas below. Never treat logged hours as completed story points.
@@ -138,4 +138,4 @@ Report the result in bugs per story point. Lower is better; interpret it as a tr
 
 ## Response format
 
-For a time report, identify the person, report ID, date range, returned time totals, and any data limitations. For an estimate, show the four dimension scores with short evidence, whether the AI-assisted or non-AI weighting was used, the weighted calculation, and the resulting Fibonacci points. For sprint metrics, show the supplied inputs, formula, result, and unit. Keep uncertainty visible and do not fabricate missing inputs.
+For a time report, identify the person, date range, returned time totals, and any data limitations. For an estimate, show the four dimension scores with short evidence, whether the AI-assisted or non-AI weighting was used, the weighted calculation, and the resulting Fibonacci points. For sprint metrics, show the supplied inputs, formula, result, and unit. Keep uncertainty visible and do not fabricate missing inputs.

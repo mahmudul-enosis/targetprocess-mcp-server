@@ -148,17 +148,16 @@ User
 Time Tracking
 - `log_time` — Log time spent on a Task, User Story, or Bug (entityId, entityType: Task | UserStory | Bug, hours, optional description, optional date)
 - `get_my_time_logs` — Get recent time log entries submitted by the current user (optional take)
-- `get_enosis_time_records` — Get Enosis Time Records for a Targetprocess user and inclusive date range (reportId, userId, startDate, endDate; reportId defaults to 59 and currently supports 59 only)
+- `get_time_records` — Get time records for a Targetprocess user and inclusive date range (userId, startDate, endDate)
 
-### `get_enosis_time_records`
+### `get_time_records`
 
-Reads the underlying Targetprocess `Times` entries for one user over an inclusive date range. It returns the time entry ID, spent hours, date, description, user, assignable, and custom fields. `reportId` selects the supported Enosis report definition (currently only ID 59); the server retrieves its source time entries through the `Times` API. The API response does not provide the tabular report's portfolio epic or public holiday columns, so those are not included or inferred.
+Reads the Targetprocess `TimeRecords` entries for one user over an inclusive date range, filtered on the record's day period and excluding public holidays. It returns the record ID, name, description, user, day period start date, portfolio epic, and custom fields (including `Hours` and `Date`). The legacy `Times` API is not used because it stopped receiving entries in June 2025.
 
 Parameters:
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `reportId` | number | No | Tabular report ID. Defaults to `59`; currently only report 59 (Enosis Time Records) is supported. |
 | `userId` | number | Yes | Targetprocess user ID. |
 | `startDate` | string | Yes | Inclusive start date in `YYYY-MM-DD` format. |
 | `endDate` | string | Yes | Inclusive end date in `YYYY-MM-DD` format. |
@@ -169,14 +168,13 @@ Example:
 
 ```json
 {
-  "reportId": 59,
   "userId": 539,
   "startDate": "2026-09-14",
   "endDate": "2026-09-25"
 }
 ```
 
-The handler retrieves all matching pages from `Times`. It returns a validation message when the date format is invalid, the start date is after the end date, or the report ID is not supported. Targetprocess HTTP failures include the response status and a bounded response detail to help diagnose API errors.
+The handler retrieves all matching pages from `TimeRecords`. It returns a validation message when the date format is invalid or the start date is after the end date. Targetprocess HTTP failures include the response status and a bounded response detail to help diagnose API errors.
 
 Assignments
 - `assign_role` — Assign a user to a role (e.g. Business Analyst, Developer, QA Engineer) on a TP card (cardId, userId, roleId)

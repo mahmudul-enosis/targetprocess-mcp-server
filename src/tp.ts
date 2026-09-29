@@ -1257,24 +1257,21 @@ export class TpClient {
     }) as T
   }
 
-  async getEnosisTimeRecords<T>({ reportId, userId, startDate, endDate }: { reportId: number, userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
-    if (reportId !== 59) {
-      throw new Error(`Unsupported time-record report ID ${reportId}. This tool currently supports report ID 59 (Enosis Time Records).`)
-    }
-
+  async getTimeRecords<T>({ userId, startDate, endDate }: { userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
     const where = [
-      `(User.Id eq ${userId})`,
-      `(Date gte '${startDate}')`,
-      `(Date lte '${endDate}')`,
+      `(ConnectedUser.Id eq ${userId})`,
+      `(DayPeriod.PlannedStartDate gte '${startDate}')`,
+      `(DayPeriod.PlannedStartDate lte '${endDate}')`,
+      "(PublicHoliday is null)",
     ].join("and")
 
     return this.getAllOrNull<T>({
-      pathParam: ["Times"],
+      pathParam: ["TimeRecords"],
       param: {
         format: "json",
         where,
-        include: "[Id,Spent,Date,Description,User[Id,FullName],Assignable[Id,Name,ResourceType],CustomFields]",
-        orderBy: "Date",
+        include: "[Id,Name,Description,ConnectedUser[Id,FullName],DayPeriod[Id,PlannedStartDate],PortfolioEpic[Id,Name,Description],PublicHoliday[Id],CustomFields]",
+        orderBy: "DayPeriod.PlannedStartDate",
       },
     }, true)
   }
