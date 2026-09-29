@@ -163,6 +163,8 @@ Parameters:
 | `startDate` | string | Yes | Inclusive start date in `YYYY-MM-DD` format. |
 | `endDate` | string | Yes | Inclusive end date in `YYYY-MM-DD` format. |
 
+The repository's Copilot skill at [`.github/skills/nwn-dev-kpi/SKILL.md`](.github/skills/nwn-dev-kpi/SKILL.md) describes how to retrieve this report for a user and date range and apply the NWN story-estimation, productivity, and defect-density rules. Time records are reported effort data; they do not alone determine accepted story points or the other KPI inputs.
+
 Example:
 
 ```json

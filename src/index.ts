@@ -1998,7 +1998,7 @@ server.registerTool(
   'get_enosis_time_records',
   {
     title: 'Get Enosis time records',
-    description: 'Get Enosis Time Records for a Targetprocess user and inclusive date range. Currently supports report ID 59; public holiday records are excluded to match that report.',
+    description: 'Get Enosis Time Records for a Targetprocess user and inclusive date range. Pass reportId (defaults to 59; only 59 is currently supported). Returns reported time data for use with the NWN Dev KPI Copilot skill; it does not imply accepted story points or sprint KPI inputs. Public holiday records are excluded to match report 59.',
     inputSchema: {
       reportId: z.number().int().positive().default(59)
         .describe('Tabular report ID; currently supported: 59 (Enosis Time Records)'),
