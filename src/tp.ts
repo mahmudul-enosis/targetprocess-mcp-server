@@ -85,7 +85,8 @@ export class TpClient {
         headers: this.headers
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const responseBody = await response.text()
+        throw new Error(`HTTP ${response.status}: ${responseBody.slice(0, 1000)}`)
       }
 
       return (await response.json()) as T
@@ -165,7 +166,7 @@ export class TpClient {
     }
   }
 
-  private async getAllOrNull<T>(params: TpClientParameters): Promise<T[] | null> {
+  private async getAllOrNull<T>(params: TpClientParameters, throwOnError = false): Promise<T[] | null> {
     const allItems: T[] = []
     let skip = 0
     const take = 100
@@ -179,7 +180,10 @@ export class TpClient {
           skip,
         },
       })
-      if (page instanceof Error) return null
+      if (page instanceof Error) {
+        if (throwOnError) throw page
+        return null
+      }
       if (!page?.Items?.length) break
       allItems.push(...page.Items)
       if (!page.Next) break
@@ -1258,22 +1262,24 @@ export class TpClient {
       throw new Error(`Unsupported time-record report ID ${reportId}. This tool currently supports report ID 59 (Enosis Time Records).`)
     }
 
+    const endExclusive = new Date(`${endDate}T00:00:00Z`)
+    endExclusive.setUTCDate(endExclusive.getUTCDate() + 1)
+
     const where = [
-      `ConnectedUser.Id eq ${userId}`,
-      `DayPeriod.PlannedStartDate ge '${startDate}'`,
-      `DayPeriod.PlannedStartDate le '${endDate}'`,
-      "PublicHoliday is null",
+      `User.Id eq ${userId}`,
+      `Date ge '${startDate}'`,
+      `Date lt '${endExclusive.toISOString().slice(0, 10)}'`,
     ].join(" and ")
 
     return this.getAllOrNull<T>({
-      pathParam: ["TimeRecords"],
+      pathParam: ["Times"],
       param: {
         format: "json",
         where,
-        include: "[Id,Description,ConnectedUser[Id,FullName],DayPeriod[Id,PlannedStartDate],PortfolioEpic[Id,Name,Description],PublicHoliday[Id],CustomFields]",
-        orderBy: "DayPeriod.PlannedStartDate",
+        include: "[Id,Spent,Date,Description,User[Id,FullName],Assignable[Id,Name,ResourceType],CustomFields]",
+        orderBy: "Date",
       },
-    })
+    }, true)
   }
 
   async getMyUserStories<T>({ state, take = 25, skip = 0 }: { state?: string, take?: number, skip?: number }): Promise<T> {

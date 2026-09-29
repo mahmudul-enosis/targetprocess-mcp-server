@@ -152,7 +152,7 @@ Time Tracking
 
 ### `get_enosis_time_records`
 
-Reads the Enosis Time Records tabular report data for one Targetprocess user over an inclusive date range. It returns the time record description, connected user, day period, portfolio epic, and custom fields. Public holiday records are excluded to match report 59.
+Reads the underlying Targetprocess `Times` entries for one user over an inclusive date range. It returns the time entry ID, spent hours, date, description, user, assignable, and custom fields. `reportId` selects the supported Enosis report definition (currently only ID 59); the server retrieves its source time entries through the `Times` API. The API response does not provide the tabular report's portfolio epic or public holiday columns, so those are not included or inferred.
 
 Parameters:
 
@@ -176,7 +176,7 @@ Example:
 }
 ```
 
-The handler retrieves all matching pages. It returns a validation message when the date format is invalid, the start date is after the end date, or the report ID is not supported.
+The handler retrieves all matching pages from `Times`. It returns a validation message when the date format is invalid, the start date is after the end date, or the report ID is not supported. Targetprocess HTTP failures include the response status and a bounded response detail to help diagnose API errors.
 
 Assignments
 - `assign_role` — Assign a user to a role (e.g. Business Analyst, Developer, QA Engineer) on a TP card (cardId, userId, roleId)
@@ -217,7 +217,7 @@ Developer Tools
    | Prompt | What to enter |
    |---|---|
    | Targetprocess API Token | The token from step 1 (input is masked) |
-   | Targetprocess Base URL | Your API endpoint, e.g. `https://yourcompany.tpondemand.com/api/v1` |
+   | Targetprocess Base URL | Your Targetprocess instance root URL, e.g. `https://yourcompany.tpondemand.com` (the client appends `/api/v1`) |
    | Targetprocess Owner ID | Your user ID — leave the default flow, install first and run the `get_logged_in_user` tool to look it up if you don't know it yet |
    | Targetprocess Project ID *(optional)* | Look up via the `get_projects` tool — press Enter to skip |
    | Targetprocess Team ID *(optional)* | Look up via the `get_teams` tool — press Enter to skip |

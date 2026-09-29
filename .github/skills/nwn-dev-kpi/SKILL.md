@@ -29,7 +29,7 @@ When preparing or explaining a row in that tab, preserve its reporting fields an
 
 Treat blank dimension or bug cells as unavailable, not as zero. Do not infer complexity, independence, predictability, weighted points, or bug counts from hours alone. The tab may contain recorded half-point story values; preserve them as recorded and do not force them into the Fibonacci mapping in the estimation rules above. If calculating a weighted value, first establish the score inputs and which weighting formula applies; do not replace a value already recorded in the sheet without being asked.
 
-The time-report tool returns time records with description, user, day period, portfolio epic, and custom fields. Use those returned fields to identify and summarize work. Do not assume every record contains a ticket ID or can be assigned to a spreadsheet row; flag records whose ticket/story mapping is missing or ambiguous. Sum hours by ticket only when the returned data provides a reliable ticket identifier and effort field.
+The time-report tool reads Targetprocess `Times` and returns the time entry ID, spent hours, date, description, user, assignable, and custom fields. It does not currently provide the tabular report's portfolio epic or public-holiday columns; do not infer these fields or silently exclude records as holidays. Use the returned assignable and custom fields to identify work. Do not assume every record contains a ticket ID or can be assigned to a spreadsheet row; flag records whose ticket/story mapping is missing or ambiguous. Sum hours by ticket only when the returned data provides a reliable ticket identifier and effort field.
 
 ## Story estimation
 

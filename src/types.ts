@@ -832,6 +832,7 @@ export interface TimeLog {
     Name: string
   }
   User: Owner
+  CustomFields?: CustomField[]
 }
 
 export interface EnosisTimeRecord {

@@ -21,7 +21,13 @@ export async function handleGetEnosisTimeRecords(
     return { content: [{ type: 'text' as const, text: 'startDate must be on or before endDate.' }] }
   }
 
-  const records = await tp.getEnosisTimeRecords<TP.EnosisTimeRecord>({ reportId, userId, startDate, endDate })
+  let records: TP.TimeLog[] | null
+  try {
+    records = await tp.getEnosisTimeRecords<TP.TimeLog>({ reportId, userId, startDate, endDate })
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error)
+    return { content: [{ type: 'text' as const, text: `Failed to get Enosis time records: ${detail.slice(0, 1000)}` }] }
+  }
 
   if (records === null) {
     return { content: [{ type: 'text' as const, text: 'Failed to get Enosis time records.' }] }
