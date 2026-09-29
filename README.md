@@ -148,6 +148,7 @@ User
 Time Tracking
 - `log_time` — Log time spent on a Task, User Story, or Bug (entityId, entityType: Task | UserStory | Bug, hours, optional description, optional date)
 - `get_my_time_logs` — Get recent time log entries submitted by the current user (optional take)
+- `get_enosis_time_records` — Get Enosis Time Records for a Targetprocess user and inclusive date range (userId, startDate, endDate)
 
 Assignments
 - `assign_role` — Assign a user to a role (e.g. Business Analyst, Developer, QA Engineer) on a TP card (cardId, userId, roleId)

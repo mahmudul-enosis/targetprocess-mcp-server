@@ -1253,6 +1253,25 @@ export class TpClient {
     }) as T
   }
 
+  async getEnosisTimeRecords<T>({ userId, startDate, endDate }: { userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
+    const where = [
+      `ConnectedUser.Id eq ${userId}`,
+      `DayPeriod.PlannedStartDate ge '${startDate}'`,
+      `DayPeriod.PlannedStartDate le '${endDate}'`,
+      "PublicHoliday is null",
+    ].join(" and ")
+
+    return this.getAllOrNull<T>({
+      pathParam: ["TimeRecords"],
+      param: {
+        format: "json",
+        where,
+        include: "[Id,Description,ConnectedUser[Id,FullName],DayPeriod[Id,PlannedStartDate],PortfolioEpic[Id,Name,Description],PublicHoliday[Id],CustomFields]",
+        orderBy: "DayPeriod.PlannedStartDate",
+      },
+    })
+  }
+
   async getMyUserStories<T>({ state, take = 25, skip = 0 }: { state?: string, take?: number, skip?: number }): Promise<T> {
     const whereParts = [`AssignedUser.Id eq ${config.tp.ownerId}`]
     if (state) whereParts.push(`EntityState.Name contains '${state}'`)

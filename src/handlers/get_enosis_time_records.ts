@@ -1,0 +1,31 @@
+import type { TpClient } from '../tp.js'
+import type * as TP from '../types.js'
+
+export async function handleGetEnosisTimeRecords(
+  tp: TpClient,
+  { userId, startDate, endDate }: { userId: number; startDate: string; endDate: string },
+) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+    return { content: [{ type: 'text' as const, text: 'Dates must use YYYY-MM-DD format.' }] }
+  }
+
+  if (Number.isNaN(Date.parse(`${startDate}T00:00:00Z`)) || Number.isNaN(Date.parse(`${endDate}T00:00:00Z`))) {
+    return { content: [{ type: 'text' as const, text: 'The supplied date is invalid.' }] }
+  }
+
+  if (startDate > endDate) {
+    return { content: [{ type: 'text' as const, text: 'startDate must be on or before endDate.' }] }
+  }
+
+  const records = await tp.getEnosisTimeRecords<TP.EnosisTimeRecord>({ userId, startDate, endDate })
+
+  if (records === null) {
+    return { content: [{ type: 'text' as const, text: 'Failed to get Enosis time records.' }] }
+  }
+
+  if (records.length === 0) {
+    return { content: [{ type: 'text' as const, text: 'No Enosis time records found for this user and date range.' }] }
+  }
+
+  return { content: [{ type: 'text' as const, text: JSON.stringify(records) }] }
+}

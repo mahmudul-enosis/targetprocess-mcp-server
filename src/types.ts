@@ -834,6 +834,16 @@ export interface TimeLog {
   User: Owner
 }
 
+export interface EnosisTimeRecord {
+  Id: number
+  Description: string | null
+  ConnectedUser: { Id: number; FullName: string } | null
+  DayPeriod: { Id: number; PlannedStartDate: string } | null
+  PortfolioEpic: { Id: number; Name: string; Description: string | null } | null
+  PublicHoliday: { Id: number } | null
+  CustomFields: CustomField[]
+}
+
 export interface RoleAssignment {
   ResourceType: string
   Id: number

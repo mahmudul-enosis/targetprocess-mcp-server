@@ -45,6 +45,7 @@ import { handleListMyUserStories } from "./handlers/list_my_user_stories.js";
 import { handleListMyBugs } from "./handlers/list_my_bugs.js";
 import { handleLogTime } from "./handlers/log_time.js";
 import { handleGetMyTimeLogs } from "./handlers/get_my_time_logs.js";
+import { handleGetEnosisTimeRecords } from "./handlers/get_enosis_time_records.js";
 import { handleGetFeatureUserStories } from "./handlers/get_feature_user_stories.js";
 import { handleGetFeatureContent } from "./handlers/get_feature_content.js";
 import { handleGetFeatureComments } from "./handlers/get_feature_comments.js";
@@ -1991,6 +1992,23 @@ server.registerTool(
     },
   },
   async ({ take }) => handleGetMyTimeLogs(tp, take)
+)
+
+server.registerTool(
+  'get_enosis_time_records',
+  {
+    title: 'Get Enosis time records',
+    description: 'Get Enosis Time Records (tabular report 59) for a Targetprocess user and inclusive date range. Public holiday records are excluded to match the report.',
+    inputSchema: {
+      userId: z.number().int().positive()
+        .describe('Targetprocess user ID (e.g. 539)'),
+      startDate: z.string()
+        .describe('Inclusive start date in YYYY-MM-DD format'),
+      endDate: z.string()
+        .describe('Inclusive end date in YYYY-MM-DD format'),
+    },
+  },
+  async ({ userId, startDate, endDate }) => handleGetEnosisTimeRecords(tp, { userId, startDate, endDate })
 )
 
 const require = createRequire(import.meta.url);
