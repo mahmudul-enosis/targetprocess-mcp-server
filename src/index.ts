@@ -1998,8 +1998,10 @@ server.registerTool(
   'get_enosis_time_records',
   {
     title: 'Get Enosis time records',
-    description: 'Get Enosis Time Records (tabular report 59) for a Targetprocess user and inclusive date range. Public holiday records are excluded to match the report.',
+    description: 'Get Enosis Time Records for a Targetprocess user and inclusive date range. Currently supports report ID 59; public holiday records are excluded to match that report.',
     inputSchema: {
+      reportId: z.number().int().positive().default(59)
+        .describe('Tabular report ID; currently supported: 59 (Enosis Time Records)'),
       userId: z.number().int().positive()
         .describe('Targetprocess user ID (e.g. 539)'),
       startDate: z.string()
@@ -2008,7 +2010,7 @@ server.registerTool(
         .describe('Inclusive end date in YYYY-MM-DD format'),
     },
   },
-  async ({ userId, startDate, endDate }) => handleGetEnosisTimeRecords(tp, { userId, startDate, endDate })
+  async ({ reportId, userId, startDate, endDate }) => handleGetEnosisTimeRecords(tp, { reportId, userId, startDate, endDate })
 )
 
 const require = createRequire(import.meta.url);

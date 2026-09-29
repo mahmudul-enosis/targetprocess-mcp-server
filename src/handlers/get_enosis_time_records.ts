@@ -3,8 +3,12 @@ import type * as TP from '../types.js'
 
 export async function handleGetEnosisTimeRecords(
   tp: TpClient,
-  { userId, startDate, endDate }: { userId: number; startDate: string; endDate: string },
+  { reportId, userId, startDate, endDate }: { reportId: number; userId: number; startDate: string; endDate: string },
 ) {
+  if (reportId !== 59) {
+    return { content: [{ type: 'text' as const, text: `Unsupported reportId ${reportId}. Currently supported: 59 (Enosis Time Records).` }] }
+  }
+
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
     return { content: [{ type: 'text' as const, text: 'Dates must use YYYY-MM-DD format.' }] }
   }
@@ -17,7 +21,7 @@ export async function handleGetEnosisTimeRecords(
     return { content: [{ type: 'text' as const, text: 'startDate must be on or before endDate.' }] }
   }
 
-  const records = await tp.getEnosisTimeRecords<TP.EnosisTimeRecord>({ userId, startDate, endDate })
+  const records = await tp.getEnosisTimeRecords<TP.EnosisTimeRecord>({ reportId, userId, startDate, endDate })
 
   if (records === null) {
     return { content: [{ type: 'text' as const, text: 'Failed to get Enosis time records.' }] }

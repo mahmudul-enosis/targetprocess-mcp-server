@@ -1253,7 +1253,11 @@ export class TpClient {
     }) as T
   }
 
-  async getEnosisTimeRecords<T>({ userId, startDate, endDate }: { userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
+  async getEnosisTimeRecords<T>({ reportId, userId, startDate, endDate }: { reportId: number, userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
+    if (reportId !== 59) {
+      throw new Error(`Unsupported time-record report ID ${reportId}. This tool currently supports report ID 59 (Enosis Time Records).`)
+    }
+
     const where = [
       `ConnectedUser.Id eq ${userId}`,
       `DayPeriod.PlannedStartDate ge '${startDate}'`,
