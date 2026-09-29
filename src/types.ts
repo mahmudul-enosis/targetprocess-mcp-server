@@ -832,10 +832,12 @@ export interface TimeLog {
     Name: string
   }
   User: Owner
+  CustomFields?: CustomField[]
 }
 
-export interface EnosisTimeRecord {
+export interface TimeRecord {
   Id: number
+  Name: string
   Description: string | null
   ConnectedUser: { Id: number; FullName: string } | null
   DayPeriod: { Id: number; PlannedStartDate: string } | null

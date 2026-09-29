@@ -148,33 +148,33 @@ User
 Time Tracking
 - `log_time` — Log time spent on a Task, User Story, or Bug (entityId, entityType: Task | UserStory | Bug, hours, optional description, optional date)
 - `get_my_time_logs` — Get recent time log entries submitted by the current user (optional take)
-- `get_enosis_time_records` — Get Enosis Time Records for a Targetprocess user and inclusive date range (reportId, userId, startDate, endDate; reportId defaults to 59 and currently supports 59 only)
+- `get_time_records` — Get time records for a Targetprocess user and inclusive date range (userId, startDate, endDate)
 
-### `get_enosis_time_records`
+### `get_time_records`
 
-Reads the Enosis Time Records tabular report data for one Targetprocess user over an inclusive date range. It returns the time record description, connected user, day period, portfolio epic, and custom fields. Public holiday records are excluded to match report 59.
+Reads the Targetprocess `TimeRecords` entries for one user over an inclusive date range, filtered on the record's day period and excluding public holidays. It returns the record ID, name, description, user, day period start date, portfolio epic, and custom fields (including `Hours` and `Date`). The legacy `Times` API is not used because it stopped receiving entries in June 2025.
 
 Parameters:
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `reportId` | number | No | Tabular report ID. Defaults to `59`; currently only report 59 (Enosis Time Records) is supported. |
 | `userId` | number | Yes | Targetprocess user ID. |
 | `startDate` | string | Yes | Inclusive start date in `YYYY-MM-DD` format. |
 | `endDate` | string | Yes | Inclusive end date in `YYYY-MM-DD` format. |
+
+The repository's Copilot skill at [`.github/skills/nwn-dev-kpi/SKILL.md`](.github/skills/nwn-dev-kpi/SKILL.md) describes how to retrieve this report for a user and date range and apply the NWN story-estimation, productivity, and defect-density rules. Time records are reported effort data; they do not alone determine accepted story points or the other KPI inputs.
 
 Example:
 
 ```json
 {
-  "reportId": 59,
   "userId": 539,
   "startDate": "2026-09-14",
   "endDate": "2026-09-25"
 }
 ```
 
-The handler retrieves all matching pages. It returns a validation message when the date format is invalid, the start date is after the end date, or the report ID is not supported.
+The handler retrieves all matching pages from `TimeRecords`. It returns a validation message when the date format is invalid or the start date is after the end date. Targetprocess HTTP failures include the response status and a bounded response detail to help diagnose API errors.
 
 Assignments
 - `assign_role` — Assign a user to a role (e.g. Business Analyst, Developer, QA Engineer) on a TP card (cardId, userId, roleId)
@@ -215,7 +215,7 @@ Developer Tools
    | Prompt | What to enter |
    |---|---|
    | Targetprocess API Token | The token from step 1 (input is masked) |
-   | Targetprocess Base URL | Your API endpoint, e.g. `https://yourcompany.tpondemand.com/api/v1` |
+   | Targetprocess Base URL | Your Targetprocess instance root URL, e.g. `https://yourcompany.tpondemand.com` (the client appends `/api/v1`) |
    | Targetprocess Owner ID | Your user ID — leave the default flow, install first and run the `get_logged_in_user` tool to look it up if you don't know it yet |
    | Targetprocess Project ID *(optional)* | Look up via the `get_projects` tool — press Enter to skip |
    | Targetprocess Team ID *(optional)* | Look up via the `get_teams` tool — press Enter to skip |

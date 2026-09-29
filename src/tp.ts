@@ -85,7 +85,8 @@ export class TpClient {
         headers: this.headers
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const responseBody = await response.text()
+        throw new Error(`HTTP ${response.status}: ${responseBody.slice(0, 1000)}`)
       }
 
       return (await response.json()) as T
@@ -165,7 +166,7 @@ export class TpClient {
     }
   }
 
-  private async getAllOrNull<T>(params: TpClientParameters): Promise<T[] | null> {
+  private async getAllOrNull<T>(params: TpClientParameters, throwOnError = false): Promise<T[] | null> {
     const allItems: T[] = []
     let skip = 0
     const take = 100
@@ -179,7 +180,10 @@ export class TpClient {
           skip,
         },
       })
-      if (page instanceof Error) return null
+      if (page instanceof Error) {
+        if (throwOnError) throw page
+        return null
+      }
       if (!page?.Items?.length) break
       allItems.push(...page.Items)
       if (!page.Next) break
@@ -1253,27 +1257,23 @@ export class TpClient {
     }) as T
   }
 
-  async getEnosisTimeRecords<T>({ reportId, userId, startDate, endDate }: { reportId: number, userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
-    if (reportId !== 59) {
-      throw new Error(`Unsupported time-record report ID ${reportId}. This tool currently supports report ID 59 (Enosis Time Records).`)
-    }
-
+  async getTimeRecords<T>({ userId, startDate, endDate }: { userId: number, startDate: string, endDate: string }): Promise<T[] | null> {
     const where = [
-      `ConnectedUser.Id eq ${userId}`,
-      `DayPeriod.PlannedStartDate ge '${startDate}'`,
-      `DayPeriod.PlannedStartDate le '${endDate}'`,
-      "PublicHoliday is null",
-    ].join(" and ")
+      `(ConnectedUser.Id eq ${userId})`,
+      `(DayPeriod.PlannedStartDate gte '${startDate}')`,
+      `(DayPeriod.PlannedStartDate lte '${endDate}')`,
+      "(PublicHoliday is null)",
+    ].join("and")
 
     return this.getAllOrNull<T>({
       pathParam: ["TimeRecords"],
       param: {
         format: "json",
         where,
-        include: "[Id,Description,ConnectedUser[Id,FullName],DayPeriod[Id,PlannedStartDate],PortfolioEpic[Id,Name,Description],PublicHoliday[Id],CustomFields]",
+        include: "[Id,Name,Description,ConnectedUser[Id,FullName],DayPeriod[Id,PlannedStartDate],PortfolioEpic[Id,Name,Description],PublicHoliday[Id],CustomFields]",
         orderBy: "DayPeriod.PlannedStartDate",
       },
-    })
+    }, true)
   }
 
   async getMyUserStories<T>({ state, take = 25, skip = 0 }: { state?: string, take?: number, skip?: number }): Promise<T> {

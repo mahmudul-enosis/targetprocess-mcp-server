@@ -45,7 +45,7 @@ import { handleListMyUserStories } from "./handlers/list_my_user_stories.js";
 import { handleListMyBugs } from "./handlers/list_my_bugs.js";
 import { handleLogTime } from "./handlers/log_time.js";
 import { handleGetMyTimeLogs } from "./handlers/get_my_time_logs.js";
-import { handleGetEnosisTimeRecords } from "./handlers/get_enosis_time_records.js";
+import { handleGetTimeRecords } from "./handlers/get_time_records.js";
 import { handleGetFeatureUserStories } from "./handlers/get_feature_user_stories.js";
 import { handleGetFeatureContent } from "./handlers/get_feature_content.js";
 import { handleGetFeatureComments } from "./handlers/get_feature_comments.js";
@@ -1995,13 +1995,11 @@ server.registerTool(
 )
 
 server.registerTool(
-  'get_enosis_time_records',
+  'get_time_records',
   {
-    title: 'Get Enosis time records',
-    description: 'Get Enosis Time Records for a Targetprocess user and inclusive date range. Currently supports report ID 59; public holiday records are excluded to match that report.',
+    title: 'Get time records',
+    description: 'Get time records for a Targetprocess user and inclusive date range. Reads TimeRecords (excluding public holidays) and returns the record ID, name, description, user, day period start date, portfolio epic, and custom fields including Hours and Date. It does not imply accepted story points or sprint KPI inputs.',
     inputSchema: {
-      reportId: z.number().int().positive().default(59)
-        .describe('Tabular report ID; currently supported: 59 (Enosis Time Records)'),
       userId: z.number().int().positive()
         .describe('Targetprocess user ID (e.g. 539)'),
       startDate: z.string()
@@ -2010,7 +2008,7 @@ server.registerTool(
         .describe('Inclusive end date in YYYY-MM-DD format'),
     },
   },
-  async ({ reportId, userId, startDate, endDate }) => handleGetEnosisTimeRecords(tp, { reportId, userId, startDate, endDate })
+  async ({ userId, startDate, endDate }) => handleGetTimeRecords(tp, { userId, startDate, endDate })
 )
 
 const require = createRequire(import.meta.url);
