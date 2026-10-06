@@ -25,6 +25,8 @@ import { handleGetUsers } from "./handlers/get_users.js";
 import { handleGetTeams, handleGetTeamsAndTeamAssignments } from "./handlers/get_teams.js";
 import { handleGetTeamIterations } from "./handlers/get_team_iterations.js";
 import { handleAddComment } from "./handlers/add_comment.js";
+import { handleUpdateComment } from "./handlers/update_comment.js";
+import { handleDeleteComment } from "./handlers/delete_comment.js";
 import { handleGetUserStoryComments } from "./handlers/get_user_story_comments.js";
 import { handleGetBugComments } from "./handlers/get_bug_comments.js";
 import { handleCreateBug } from "./handlers/create_bug.js";
@@ -396,6 +398,36 @@ server.registerTool(
     },
   },
   async ({ id, comment }) => handleAddComment(tp, id, comment)
+)
+
+server.registerTool(
+  'update_comment',
+  {
+    title: 'Update a Targetprocess comment',
+    description: 'Replace the text of an existing comment by comment ID. This updates only the comment, not its parent card.',
+    inputSchema: {
+      id: z.string()
+        .min(1)
+        .describe('Targetprocess comment ID (not the parent card ID)'),
+      comment: z.string()
+        .describe('Replacement comment text'),
+    },
+  },
+  async ({ id, comment }) => handleUpdateComment(tp, id, comment)
+)
+
+server.registerTool(
+  'delete_comment',
+  {
+    title: 'Delete a Targetprocess comment',
+    description: 'Permanently delete a comment by comment ID. This deletes only the comment, not its parent card.',
+    inputSchema: {
+      id: z.string()
+        .min(1)
+        .describe('Targetprocess comment ID (not the parent card ID)'),
+    },
+  },
+  async ({ id }) => handleDeleteComment(tp, id)
 )
 
 server.registerTool(

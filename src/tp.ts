@@ -643,6 +643,20 @@ export class TpClient {
     }, commentData) as T
   }
 
+  async updateComment<T>(commentId: string, description: string): Promise<TpResult<T>> {
+    return this.postRaw<any, T>({
+      pathParam: ["comments", commentId],
+      param: { "format": "json" },
+    }, { Description: description })
+  }
+
+  async deleteComment<T>(commentId: string): Promise<TpResult<T>> {
+    return this.del<T>({
+      pathParam: ["comments", commentId],
+      param: { "format": "json" },
+    })
+  }
+
   async addTestStep<T>(testCaseId: string, testStep: { description: string, result: string }): Promise<T> {
     const testStepData = {
       "Description": testStep.description,
